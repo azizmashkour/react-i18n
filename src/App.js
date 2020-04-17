@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { withNamespaces } from 'react-i18next';
+import { withTranslation } from 'react-i18next';
 import Select from 'react-select';
 import { options } from './config/options';
+import BrowserLanguage from './utils/BrowserLanguage';
 import './App.css';
 
 export class App extends Component {
@@ -15,11 +16,19 @@ export class App extends Component {
 
   changeLang = (lang) => {
     const { i18n } = this.props;
-    const { value } = lang;
-    this.setState({
-      lang,
-    });
-    i18n.changeLanguage(value);
+    if (!lang) {
+      const tempLang = BrowserLanguage.getDefaultLanguage();
+      lang = tempLang === 'en' ? 'fr' : 'en';
+    }
+    this.setState({ lang: lang });
+
+    if (BrowserLanguage.setLanguage(lang.value)) {
+      // Reload page if browser support localStorage
+      window.location.reload(); // Relaod app after langue change
+    } else {
+      // Change language at runtime if localStorage not found
+      i18n.changeLanguage(lang); // Need for change language at runtime
+    }
   };
 
   render() {
@@ -42,4 +51,4 @@ export class App extends Component {
   }
 }
 
-export default withNamespaces('translations')(App);
+export default withTranslation()(App);
